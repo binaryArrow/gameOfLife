@@ -466,27 +466,23 @@ parcelHelpers.export(exports, "Game", ()=>Game
 var _cell = require("./cell");
 class Game {
     constructor(canvas){
-        this.gridWidth = 800;
-        this.gridHeight = 450;
-        this.rows = this.gridHeight / 10;
-        this.columns = this.gridWidth / 10;
         this.cells = [];
         this.grid = canvas;
         this.context = canvas.getContext("2d");
-        this.grid.width = this.gridWidth;
-        this.grid.height = this.gridHeight;
+        this.rows = this.grid.height / 10;
+        this.columns = this.grid.width / 10;
         this.createCells();
-        window.requestAnimationFrame(()=>this.gameloop()
+        window.requestAnimationFrame(()=>this.gameLoop()
         );
     }
-    gameloop() {
+    gameLoop() {
         this.checkCells();
         this.context.clearRect(0, 0, this.grid.width, this.grid.height);
         this.cells.forEach((it)=>{
             it.draw();
         });
         setTimeout(()=>{
-            window.requestAnimationFrame(()=>this.gameloop()
+            window.requestAnimationFrame(()=>this.gameLoop()
             );
         }, 100);
     }
@@ -501,17 +497,22 @@ class Game {
             switch(numberOfNeighboursAlive){
                 case 2:
                     this.cells[index].aliveInNextGeneration = this.cells[index].alive;
+                    this.cells[index].cameAlive = false;
                     break;
                 case 3:
                     this.cells[index].aliveInNextGeneration = true;
+                    this.cells[index].cameAlive = true;
                     break;
                 default:
                     this.cells[index].aliveInNextGeneration = false;
+                    this.cells[index].cameAlive = false;
                     break;
             }
         }
         // take over the values from nextGeneration
-        for(let i = 0; i < this.cells.length; i++)this.cells[i].alive = this.cells[i].aliveInNextGeneration;
+        this.cells.forEach((it)=>{
+            it.alive = it.aliveInNextGeneration;
+        });
     }
     isAlive(x, y) {
         // check grid boundaries, return 0 if cell out of grid
@@ -531,6 +532,7 @@ parcelHelpers.export(exports, "Cell", ()=>Cell
 );
 class Cell {
     constructor(context, posX, posY){
+        this.cameAlive = false;
         this.aliveInNextGeneration = false;
         this.context = context;
         this.posX = posX;
@@ -538,13 +540,24 @@ class Cell {
         this.alive = Math.random() > 0.5;
     }
     draw() {
-        this.context.fillStyle = this.alive ? '#a8327f' : '#32a86f';
-        if (this.aliveInNextGeneration) this.context.fillStyle = '#2e2be3';
+        // this is for square cells
+        this.context.fillStyle = this.alive ? '#6c1fc9' : '#eaeaef';
+        if (this.cameAlive) this.context.fillStyle = '#9d67e8';
         this.context.fillRect(this.posX * Cell.width, this.posY * Cell.height, Cell.width, Cell.height);
         this.context.strokeStyle = 'black';
         this.context.lineWidth = 0.5;
         this.context.strokeRect(this.posX * Cell.width, this.posY * Cell.height, Cell.width, Cell.height);
-    }
+    // this is for round cells
+    /*        this.context.beginPath()
+        this.context.fillStyle = this.alive ? '#e8be47':'#46464b'
+        if(this.cameAlive){
+            this.context.fillStyle = '#8f7a16'
+        }
+        this.context.arc(this.posX*Cell.width+5, this.posY*Cell.height+5, 5, 0, 2 * Math.PI)
+        this.context.strokeStyle = 'black'
+        this.context.lineWidth = 0.5
+        this.context.fill()
+        this.context.stroke()*/ }
 }
 Cell.width = 10;
 Cell.height = 10;

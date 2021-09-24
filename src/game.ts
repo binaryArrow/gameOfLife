@@ -1,11 +1,8 @@
 import {Cell} from "./cell";
 
 export class Game {
-    gridWidth = 800
-    gridHeight = 450
-    rows = this.gridHeight / 10
-    columns = this.gridWidth / 10
-
+    rows: number
+    columns: number
     grid: HTMLCanvasElement
     context: CanvasRenderingContext2D
     cells: Cell[] = []
@@ -13,13 +10,13 @@ export class Game {
     constructor(canvas: HTMLCanvasElement) {
         this.grid = canvas
         this.context = canvas.getContext("2d")!
-        this.grid.width = this.gridWidth
-        this.grid.height = this.gridHeight
+        this.rows = this.grid.height / 10
+        this.columns = this.grid.width / 10
         this.createCells()
-        window.requestAnimationFrame(() => this.gameloop())
+        window.requestAnimationFrame(() => this.gameLoop())
     }
 
-    gameloop() {
+    gameLoop() {
 
         this.checkCells()
 
@@ -30,7 +27,7 @@ export class Game {
         })
 
         setTimeout(() => {
-            window.requestAnimationFrame(() => this.gameloop())
+            window.requestAnimationFrame(() => this.gameLoop())
         }, 100)
     }
 
@@ -58,23 +55,26 @@ export class Game {
                 switch (numberOfNeighboursAlive) {
                     case 2:{
                         this.cells[index].aliveInNextGeneration = this.cells[index].alive
+                        this.cells[index].cameAlive = false
                         break
                     }
                     case 3: {
                         this.cells[index].aliveInNextGeneration = true
+                        this.cells[index].cameAlive = true
                         break
                     }
                     default:{
                         this.cells[index].aliveInNextGeneration = false
+                        this.cells[index].cameAlive = false
                         break
                     }
                 }
             }
         }
         // take over the values from nextGeneration
-        for(let i = 0; i < this.cells.length; i++) {
-            this.cells[i].alive = this.cells[i].aliveInNextGeneration
-        }
+        this.cells.forEach((it) => {
+            it.alive = it.aliveInNextGeneration
+        })
     }
 
     isAlive(x: number, y: number): number {
